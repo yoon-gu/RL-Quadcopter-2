@@ -27,7 +27,7 @@ class ReplayBuffer:
     def __len__(self):
         """Return the current size of internal memory."""
         return len(self.memory)
-    
+
 from keras import layers, models, optimizers
 from keras import backend as K
 
@@ -148,7 +148,7 @@ class Critic:
         self.get_action_gradients = K.function(
             inputs=[*self.model.input, K.learning_phase()],
             outputs=action_gradients)
-        
+
 class DDPG():
     """Reinforcement Learning agent that learns using DDPG."""
     def __init__(self, task):
@@ -233,7 +233,7 @@ class DDPG():
 
         # Soft-update target models
         self.soft_update(self.critic_local.model, self.critic_target.model)
-        self.soft_update(self.actor_local.model, self.actor_target.model)   
+        self.soft_update(self.actor_local.model, self.actor_target.model)
 
     def soft_update(self, local_model, target_model):
         """Soft update model parameters."""
@@ -244,3 +244,28 @@ class DDPG():
 
         new_weights = self.tau * local_weights + (1 - self.tau) * target_weights
         target_model.set_weights(new_weights)
+
+
+import numpy as np
+import copy
+
+class OUNoise:
+    """Ornstein-Uhlenbeck process."""
+
+    def __init__(self, size, mu, theta, sigma):
+        """Initialize parameters and noise process."""
+        self.mu = mu * np.ones(size)
+        self.theta = theta
+        self.sigma = sigma
+        self.reset()
+
+    def reset(self):
+        """Reset the internal state (= noise) to mean (mu)."""
+        self.state = copy.copy(self.mu)
+
+    def sample(self):
+        """Update internal state and return it as a noise sample."""
+        x = self.state
+        dx = self.theta * (self.mu - x) + self.sigma * np.random.randn(len(x))
+        self.state = x + dx
+        return self.state
